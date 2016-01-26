@@ -22,9 +22,14 @@ from kicad.point import Point
 from kicad import units
 
 
+THROUGH = 3
+BLIND = 2
+MICRO = 1
+
 class Via(object):
     def __init__(self, coord, layer_pair, size, drill, board=None):
         self._via = pcbnew.VIA(board and board.native_obj)
+        self._via.SetViaType(via_type)
         self._via.SetWidth(int(size * units.DEFAULT_UNIT_IUS))
         coord_point = Point.build_from(coord)
         self._via.SetEnd(coord_point.native_obj)
@@ -41,3 +46,4 @@ class Via(object):
     @property
     def native_obj(self):
         return self._via
+

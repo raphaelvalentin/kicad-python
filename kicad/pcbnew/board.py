@@ -22,10 +22,10 @@ pcbnew = __import__('pcbnew')
 import kicad
 from kicad.pcbnew import drawing
 from kicad.pcbnew import module
+from kicad.pcbnew import via
 from kicad.pcbnew.track import Track
 from kicad.pcbnew.via import Via
 from kicad import units
-
 
 class Board(object):
     def __init__(self):
@@ -119,10 +119,11 @@ class Board(object):
         else:
             return 0.2
 
-    def add_via(self, coord, layer_pair=('B.Cu', 'F.Cu'), size=None,
+    def add_via(self, coord, via_type=via.THROUGH, layer_pair=('B.Cu', 'F.Cu'), size=None,
                 drill=None):
         """Create a via on the board.
 
+        :param via_type: type of the via (default:via.THROUGH, via.BURIED, via.MICRO).
         :param coord: Position of the via.
         :param layer_pair: Tuple of the connected layers (for example
                            ('B.Cu', 'F.Cu')).
@@ -131,8 +132,9 @@ class Board(object):
         :returns: the created Via
         """
         return self.add(
-            Via(coord, layer_pair, size or self.default_via_size,
+            Via(coord, via_type, layer_pair, size or self.default_via_size,
                 drill or self.default_via_drill, board=self))
+
 
     def add_line(self, start, end, layer='F.SilkS', width=0.15):
         """Create a graphic line on the board"""
@@ -155,3 +157,22 @@ class Board(object):
         return self.add(
             drawing.Arc(center, radius, start_angle, stop_angle,
                         layer, width, board=self))
+
+    def SetCopperLayerCount(self, n):
+        self._obj.SetCopperLayerCount(n)
+
+    def SetBoardThickness(self, size):
+        self._obj.SetBoardThickness(int(size * units.DEFAULT_UNIT_IUS))
+
+    def SetBlindBuriedViaAllowed(self, flag=True):
+        settings = self._obj.GetDesignSettings()
+        settings.m_BlindBuriedViaAllowed = flag
+        self._obj.SetDesignSettings(settings)
+
+    def add_track(self, path, layer=None, width=None):
+        for i in xrange(len(path)-1):
+            self.add_track_segment(path[i], path[i+1], layer=layer, width=width)
+
+
+
+
